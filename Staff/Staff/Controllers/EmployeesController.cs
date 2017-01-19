@@ -12,6 +12,7 @@ using System.Data.SqlClient;
 
 namespace Staff.Controllers
 {
+    [Authorize]
     public class EmployeesController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
@@ -23,6 +24,7 @@ namespace Staff.Controllers
             return View(employees.ToList());
         }
 
+        [Authorize(Roles = "admin")]
         // GET: Employees/Create
         public ActionResult Create()
         {
@@ -35,6 +37,7 @@ namespace Staff.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
         public JsonResult Create([Bind(Include = "Id,Name,LastName,Age,Position,ChiefId")] Employee employee)
         {
             if (ModelState.IsValid)
@@ -47,6 +50,7 @@ namespace Staff.Controllers
             return Json(false);
         }
 
+        [Authorize(Roles = "admin")]
         // GET: Employees/Edit/5
         public ActionResult Edit(int? id)
         {
@@ -59,7 +63,7 @@ namespace Staff.Controllers
             {
                 return HttpNotFound();
             }
-            ViewBag.ChiefId = new SelectList(db.Employees, "Id", "Name", employee.ChiefId);
+            ViewBag.ChiefId = new SelectList(db.Employees, "Id", "FullName", employee.ChiefId);
             return View(employee);
         }
 
@@ -68,6 +72,7 @@ namespace Staff.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
         public ActionResult Edit([Bind(Include = "Id,Name,LastName,Age,Position,ChiefId")] Employee employee)
         {
             if (ModelState.IsValid)
@@ -83,6 +88,7 @@ namespace Staff.Controllers
         // POST: Employees/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
         public JsonResult DeleteConfirmed(int id)
         {
             try

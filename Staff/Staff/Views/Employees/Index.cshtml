@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Staff.Models.Employee>
+﻿@using Microsoft.AspNet.Identity
+@model IEnumerable<Staff.Models.Employee>
 
 @{
     ViewBag.Title = "Index";
@@ -10,15 +11,15 @@
 }
 
 <h2>Index</h2>
+@if (User.IsInRole("admin"))
+{
+    <p>
+        @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-default" })
+    </p>
+}
 
-<p>
-    @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-default" })
-</p>
 <table class="table">
     <tr>
-        <th>
-            @Html.DisplayName("Chief")
-        </th>
         <th>
             @Html.DisplayNameFor(model => model.Name)
         </th>
@@ -31,14 +32,17 @@
         <th>
             @Html.DisplayNameFor(model => model.Position)
         </th>
-        <th></th>
+        <th>
+            @Html.DisplayName("Chief")
+        </th>
+        @if (User.IsInRole("admin"))
+        {
+            <th></th>
+        }
     </tr>
 
 @foreach (var item in Model) {
     <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Chief.FullName)
-        </td>
         <td>
             @Html.DisplayFor(modelItem => item.Name)
         </td>
@@ -52,9 +56,15 @@
             @Html.DisplayFor(modelItem => item.Position)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }, new { @class = "btn btn-default" })
-            <button class="btn btn-default btn-delete" id="@item.Id">Delete</button>
+            @Html.DisplayFor(modelItem => item.Chief.FullName)
         </td>
+        @if (User.IsInRole("admin"))
+        {
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-default" })
+                <button class="btn btn-default btn-delete" id="@item.Id">Delete</button>
+            </td>
+        }
     </tr>
 }
 
@@ -87,6 +97,7 @@
                     success: function (ansver) {
                         if (ansver != "Success") {
                             alert(ansver);
+                            btn.prop("disabled", false);
                         }
                         else {
                             btn.closest("tr").remove();
