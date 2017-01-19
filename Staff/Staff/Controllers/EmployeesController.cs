@@ -21,25 +21,10 @@ namespace Staff.Controllers
             return View(employees.ToList());
         }
 
-        // GET: Employees/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Employee employee = db.Employees.Find(id);
-            if (employee == null)
-            {
-                return HttpNotFound();
-            }
-            return View(employee);
-        }
-
         // GET: Employees/Create
         public ActionResult Create()
         {
-            ViewBag.ChiefId = new SelectList(db.Employees, "Id", "Name");
+            ViewBag.ChiefId = new SelectList(db.Employees, "Id", "FullName");
             return View();
         }
 
@@ -48,17 +33,16 @@ namespace Staff.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,LastName,Age,Position,ChiefId")] Employee employee)
+        public JsonResult Create([Bind(Include = "Id,Name,LastName,Age,Position,ChiefId")] Employee employee)
         {
             if (ModelState.IsValid)
             {
                 db.Employees.Add(employee);
                 db.SaveChanges();
-                return RedirectToAction("Index");
+                return Json(true);
             }
-
-            ViewBag.ChiefId = new SelectList(db.Employees, "Id", "Name", employee.ChiefId);
-            return View(employee);
+            
+            return Json(false);
         }
 
         // GET: Employees/Edit/5
