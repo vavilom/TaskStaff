@@ -7,6 +7,8 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Staff.Models;
+using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 
 namespace Staff.Controllers
 {
@@ -78,30 +80,35 @@ namespace Staff.Controllers
             return View(employee);
         }
 
-        // GET: Employees/Delete/5
-        public ActionResult Delete(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Employee employee = db.Employees.Find(id);
-            if (employee == null)
-            {
-                return HttpNotFound();
-            }
-            return View(employee);
-        }
-
         // POST: Employees/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public JsonResult DeleteConfirmed(int id)
         {
-            Employee employee = db.Employees.Find(id);
-            db.Employees.Remove(employee);
-            db.SaveChanges();
-            return RedirectToAction("Index");
+            try
+            {
+                Employee employee = db.Employees.Find(id);
+                db.Employees.Remove(employee);
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                var sqlException = ex.GetBaseException() as SqlException;
+
+                if (sqlException != null)
+                {
+                    var number = sqlException.Number;
+
+                    if (number == 547)
+                    {
+                        return Json("This employe must be delete from employees, where he is Chief!");
+                    }
+
+                    return Json("Server error!");
+                }
+            }
+
+            return Json("Success");
         }
 
         protected override void Dispose(bool disposing)

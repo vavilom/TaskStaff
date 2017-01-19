@@ -4,15 +4,20 @@
     ViewBag.Title = "Index";
 }
 
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
+{
+    @Html.AntiForgeryToken()
+}
+
 <h2>Index</h2>
 
 <p>
-    @Html.ActionLink("Create New", "Create")
+    @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-default" })
 </p>
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Chief.Name)
+            @Html.DisplayName("Chief")
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Name)
@@ -32,7 +37,7 @@
 @foreach (var item in Model) {
     <tr>
         <td>
-            @Html.DisplayFor(modelItem => item.Chief.Name)
+            @Html.DisplayFor(modelItem => item.Chief.FullName)
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.Name)
@@ -47,11 +52,53 @@
             @Html.DisplayFor(modelItem => item.Position)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+            @Html.ActionLink("Edit", "Edit", new { id=item.Id }, new { @class = "btn btn-default" })
+            <button class="btn btn-default btn-delete" id="@item.Id">Delete</button>
         </td>
     </tr>
 }
 
 </table>
+
+@section Scripts{
+    <script>
+        //delete employee by id
+        $(".btn-delete").on("click", function (e) {
+            var btn = $(e.target);
+            var employeeId = parseInt(btn.attr('id'));
+            var form = $('#__AjaxAntiForgeryForm');
+            var token = $('input[name="__RequestVerificationToken"]', form).val();
+
+            if (employeeId == NaN || employeeId <= 0) {
+                alert("Bad request!");
+                return;
+            }
+
+            if (confirm("You want to delete a employee?")) {
+                btn.prop("disabled", true);
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Delete", "Employees")',
+                    data: {
+                        __RequestVerificationToken: token,
+                        id: employeeId
+                    },
+                    success: function (ansver) {
+                        if (ansver != "Success") {
+                            alert(ansver);
+                        }
+                        else {
+                            btn.closest("tr").remove();
+                        }
+                    },
+                    error: function (jqXHR, exception) {
+                        alert("Error!");
+                        btn.prop("disabled", false);
+                    },
+                    dataType: 'json'
+                });
+            }
+        });
+    </script> 
+    }
